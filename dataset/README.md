@@ -19,6 +19,57 @@ Svarah is an evaluation benchmark with only a `test` split. It is suitable for o
 - [ ] Start with 20 clips for the first debugging experiment.
 - [ ] Record which clips are used for training and keep evaluation clips separate.
 
+## Download and prepare the first 20 clips
+
+This step runs on CPU; no GPU is needed. The preparation script selects the first 20 valid clips in source order from a pinned Svarah revision. It keeps full recordings, so some may be longer than the suggested 3–10 seconds.
+
+1. Open [Svarah on Hugging Face](https://huggingface.co/datasets/ai4bharat/Svarah), sign in, and accept its access conditions.
+2. From the project root, install the locked dependencies and authenticate:
+
+   ```bash
+   uv sync
+   uv run hf auth login
+   ```
+
+   Use a Hugging Face token with read access to the dataset. Enter it into the login prompt; do not save tokens in project files or Git.
+
+3. Run preparation:
+
+   ```bash
+   uv run python src/prepare_dataset.py
+   ```
+
+The script streams the dataset with decoding disabled, then uses SoundFile and SciPy to prepare audio. Streaming may transfer more than the selected audio alone because of Parquet buffering.
+
+Outputs:
+
+- `dataset/raw/svarah/`: unchanged original audio bytes and `metadata.jsonl`, preserving transcripts, source metadata, revision, and CC BY 4.0 attribution.
+- `dataset/processed/svarah/`: mono, 16 kHz PCM-16 WAV copies.
+- `dataset/manifests/tiny.csv`: 20 rows with prepared paths, unchanged transcripts, measured durations, and empty speaker IDs when unavailable. Svarah's published schema has no speaker ID field; demographic fields are not treated as identities.
+- `dataset/manifests/svarah_review.html`: browser review page.
+
+The script prints each clip's sample rate, duration, and transcript. It publishes the manifest only after all 20 clips validate. Original files from interrupted runs are retained for retry. A matching prior output can be regenerated; unrelated manifest content is never overwritten. Back up or move an existing custom `tiny.csv` before preparing this subset.
+
+Downloaded audio, generated source metadata, and review artifacts are ignored by Git. Keep them in persistent storage for future GPU sessions.
+
+## Listen and review transcripts
+
+Open `dataset/manifests/svarah_review.html` in your browser. Each clip has an audio player, its original transcript, a review checkbox, and a notes field.
+
+- [ ] Listen to all 20 clips and compare the speech with the transcript.
+- [ ] Record missing words, incorrect words, silence, or unintelligible speech in the notes field.
+- [ ] Mark a clip reviewed only after listening and checking its transcript.
+- [ ] Click **Download review results** and save the JSON file before closing the page.
+- [ ] Resolve flagged examples before training; review notes do not automatically change the manifest.
+
+Checkboxes and notes are stored in browser local storage when supported. The downloaded JSON is the reliable saved record. If local-file playback is blocked, run `uv run python -m http.server 8000 --bind 127.0.0.1` from the project root and visit `http://127.0.0.1:8000/dataset/manifests/svarah_review.html`. Stop the server with Ctrl+C afterward.
+
+Run the preparation tests without downloading audio:
+
+```bash
+uv run python -m unittest discover -s tests -v
+```
+
 ## Folder structure
 
 ```text

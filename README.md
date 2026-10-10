@@ -43,10 +43,32 @@ Free GPU availability and session limits vary. Check the platform's current limi
 
 ## 5. Build the tokenizer and model
 
+### Build the tokenizer
+
+- [ ] Read transcripts from `dataset/manifests/tiny.csv` for the initial debugging experiment.
 - [ ] Create a character vocabulary from training transcripts, including spaces.
 - [ ] Reserve a separate CTC blank token and handle batch padding separately.
-- [ ] Verify that text can be encoded into token IDs and decoded back correctly.
-- [ ] Extract log-mel features from audio.
+- [ ] Verify that encoding and decoding reproduce the original transcript exactly, including repeated characters.
+
+### Extract audio features
+
+- [ ] Load the prepared mono, 16 kHz WAV files listed in the manifest.
+- [ ] Convert each recording into 80-bin log-mel features.
+- [ ] Check that features contain only finite values.
+- [ ] Record each recording's feature length before padding.
+
+### Build the training data loader
+
+- [ ] Pair each recording's features with its encoded transcript.
+- [ ] Pad variable-length examples into batches.
+- [ ] Preserve unpadded feature and transcript lengths for CTC loss.
+- [ ] Produce padding masks so the model can ignore padded audio frames.
+- [ ] Load one batch successfully and print feature shapes, transcript tokens, and lengths.
+
+The next milestone is a valid batch. Tokenizer round-trip decoding preserves repeated characters; collapsing repeated predictions is a separate step used when decoding CTC model outputs.
+
+### Build the model
+
 - [ ] Implement convolutional downsampling followed by a Transformer encoder.
 - [ ] Add an output layer that predicts vocabulary tokens at each time step.
 - [ ] Configure CTC loss using the correct input and transcript lengths.

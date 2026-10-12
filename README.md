@@ -45,10 +45,22 @@ Free GPU availability and session limits vary. Check the platform's current limi
 
 ### Build the tokenizer
 
-- [ ] Read transcripts from `dataset/manifests/tiny.csv` for the initial debugging experiment.
-- [ ] Create a character vocabulary from training transcripts, including spaces.
-- [ ] Reserve a separate CTC blank token and handle batch padding separately.
-- [ ] Verify that encoding and decoding reproduce the original transcript exactly, including repeated characters.
+- [x] Read transcripts from `dataset/manifests/tiny.csv` for the initial debugging experiment.
+- [x] Create a character vocabulary from training transcripts, including spaces.
+- [x] Reserve a separate CTC blank token and define batch padding separately.
+- [x] Verify that encoding and decoding reproduce the original transcript exactly, including repeated characters.
+
+Build or regenerate the tokenizer:
+
+```bash
+uv run python src/tokenizer.py
+```
+
+The tokenizer is saved to `artifacts/tokenizer.json`. The current 20 transcripts produce 52 tokens, including CTC blank ID `0`. Characters are sorted for deterministic IDs; case, punctuation, spaces, and repeated characters are preserved without normalization. Unknown characters raise an error instead of silently changing text.
+
+Use `CharacterTokenizer.load(path)`, `encode(text)`, and `decode(token_ids)` from `src.tokenizer` for text. Use `decode_ctc(prediction_ids)` for model predictions. `PAD_ID = -100` is a future batching sentinel, not a vocabulary token; exclude padding from CTC targets using transcript lengths.
+
+For another training manifest, use `--manifest path/to/train.csv --output path/to/tokenizer.json`. Build the vocabulary from training text only and freeze it before training; changing token IDs invalidates compatibility with model checkpoints.
 
 ### Extract audio features
 

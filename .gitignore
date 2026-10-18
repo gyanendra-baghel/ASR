@@ -2,7 +2,10 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-dataset/raw/svarah/
-dataset/processed/svarah/
-dataset/manifests/svarah_review.html
-dataset/manifests/svarah-review-results.json
+
+dataset/raw/*
+!dataset/raw/.gitkeep
+dataset/manifests/*
+!dataset/manifests/.gitkeep
+dataset/processed/*
+!dataset/processed/.gitkeep
